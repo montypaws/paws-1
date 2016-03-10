@@ -38,9 +38,9 @@ class InjestServer:
         try:
             if len(self.task_queue) > 0:
                 for task in self.task_queue:
-                    self.loop.run_until_complete(task())
+                    asyncio.ensure_future(task())
 
-
+            self.is_running = True
             self.loop.run_forever()
         except KeyboardInterrupt:
             pass

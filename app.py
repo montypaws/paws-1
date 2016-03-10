@@ -43,6 +43,14 @@ async def profile(req,res):
     res.body = render_template('profile.html', {'nav_list' : await content.get_nav(), 'uid':req.wildcards['uid']})
     return res
 
+async def clear_cache():
+
+    while True:
+        await asyncio.sleep(60)
+        content.CACHE = {}
+        print('cache cleared...')
+
+
 def main():
     app = InjestServer()
 
@@ -52,6 +60,8 @@ def main():
     app.add_route('/course/{aid}', course)
     app.add_route('/page/{aid}', page)
     app.add_route('/profile/{uid}', profile)
+
+    #app.add_task(clear_cache)
 
     app.run()
 
