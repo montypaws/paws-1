@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{page_data['title']}}{% endblock %}
+{% block billboard %}
+    <p>{{page_data['billboard']}}</p>
+{% endblock %}
+{% block navmenu %}
+    <ul>
+        {% for item in nav_list %}
+            <li><a href="{{item['url']}}">{{item['name']}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+{% block main %}
+    <p>{{content|safe}}</p>
+{% endblock %}
+{% block navbar %}
+    <center>
+    <form>
+        <a href= "/page/{{page_data['resource_prev']}}">prev</a>
+        | <a href="/page/{{page_data['resource_next']}}">next</a>
+    </form>
+    </center>
+{% endblock %}

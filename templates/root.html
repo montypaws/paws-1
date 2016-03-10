@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}SCW - Main{% endblock %}
+{% block navmenu %}
+    <ul>
+        {% for item in nav_list %}
+        {% if item['nav_subtype'] == "main" %}
+            <li class="thispage">{{item['name']}}</li>
+        {% else %}
+            <li><a href="{{item['url']}}">{{item['name']}}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock %}
+{% block main %}
+    <h3>Welcome to SCW!</h3>
+    <p>Simplified Courseware.</p>
+    <p>some stuff about what this is all about...</p>
+{% endblock %}
+{% block navbar %}{% endblock %}

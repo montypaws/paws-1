@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}SCW - Index{% endblock %}
+{% block navmenu %}
+    <ul>
+        {% for item in nav_list %}
+        {% if item['nav_subtype'] == "index" %}
+            <li class="thispage">{{item['name']}}</li>
+        {% else %}
+            <li><a href="{{item['url']}}">{{item['name']}}</a></li>
+        {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock %}
+{% block main %}
+    <h4><u>Course Listing:</u></h4>
+    <ul>
+        {% for course in courses %}
+        <li><a href="/course/{{ course['filename'] }}">{{course['title']}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+{% block navbar %}{% endblock %}

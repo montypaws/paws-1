@@ -1,0 +1,16 @@
+{
+    "title":"test course type 3",
+    "billboard":"Test Course Type 3",
+    "metadata":
+    {
+        "author":"erika j",
+        "publish_date":"2015-08-15",
+        "pages":2
+    },
+    "pages":
+    [
+        "e5c78cd533a2bc86b5d6806d857533315de42b77",
+        "718a8187d60f95226d056cb9592cd794c2e6a060",
+        "c9c9f65c5ee31184168045c4d7c616b42188acac"
+    ]
+}

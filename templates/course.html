@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{page_data['title']}}{% endblock %}
+{% block billboard %}
+    <p>{{page_data['billboard']}}</p>
+{% endblock %}
+{% block navmenu %}
+    <ul>
+        {% for item in nav_list %}
+            <li><a href="{{item['url']}}">{{item['name']}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
+{% block main %}
+    <h3>Page Listing:</h3>
+    <ul>
+        {% for page in pages %}
+        <li><a href="/page/{{ page }}">{{page}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

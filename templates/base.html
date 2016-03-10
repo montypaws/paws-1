@@ -1,0 +1,19 @@
+<html>
+<head>
+    {% block head %}
+    <link rel="stylesheet" href="/static/style.css" type="text/css">
+    <title>{% block title %} Welcome To SCW {% endblock %}</title>
+    {% endblock %}
+</head>
+<body>
+    <div class="billboard">{% block billboard %}<p><u>Simple Courseware</u></p>{% endblock %}</div>
+    <div class="navmenu">{% block navmenu %}{% endblock %}</div>
+    <div class="content">{% block main %}{% endblock %}</div>
+    <div class="navbar">{% block navbar%}{% endblock %}</div>
+    <div class="footer">
+        {% block footer %}
+        &copy; SCW
+        {% endblock %}
+    </div>
+</body>
+</html>

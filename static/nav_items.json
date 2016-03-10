@@ -1,0 +1,19 @@
+{
+    "nav_items":[
+        {
+            "name":"Main Page",
+            "url":"/",
+            "nav_subtype":"main"
+        },
+        {
+            "name":"Courseware Index",
+            "url":"/index",
+            "nav_subtype":"index"
+        },
+        {
+            "name":"Student Profile",
+            "url":"/profile",
+            "nav_subtype":"profile"
+        }
+    ]
+}
