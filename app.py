@@ -64,7 +64,12 @@ async def page(req,res):
 
 
 async def profile(req,res):
-    res.body = render_template('profile.html', nav_list= await content.get_nav(), uid=req.wildcards['uid'])
+    if req.wildcards.keys():
+        uid = req.wildcards['uid']
+    else:
+        uid = 'none'
+
+    res.body = render_template('profile.html', nav_list= await content.get_nav(), uid=uid)
     return res
 
 
@@ -81,6 +86,7 @@ def main():
     app.add_route('/static/{filename}', static)
     app.add_route('/course/{aid}', course)
     app.add_route('/page/{aid}', page)
+    app.add_route('/profile', profile)
     app.add_route('/profile/{uid}', profile)
 
     #app.add_task(clear_cache)
