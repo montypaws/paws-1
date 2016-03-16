@@ -30,6 +30,9 @@ SP = ' '
 STATUS_DICT = {'200':'OK',
                '404':'Not Found'}
 SEP = ':'
+AP = '&'
+QM = '?'
+EQ = '='
 
 class HttpResponse:
     '''simple HTTP Response class
@@ -95,10 +98,10 @@ class HttpRequest:
         self.resource = self.start_line.split(SP)[1].strip(SP)
 
         #process parameters
-        if '?' in self.resource:
-            self.resource, params = self.resource.split('?')
-            for param in params.split('&'):
-                key,token = param.split('=')
+        if QM in self.resource:
+            self.resource, params = self.resource.split(QM)
+            for param in params.split(AP):
+                key,token = param.split(EQ)
                 self.params[key]=token
 
         #if resource ends with a / remove it
