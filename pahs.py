@@ -52,11 +52,11 @@ class InjestServer:
         self.loop = asyncio.get_event_loop()
         self.router = Router()
 
-    def run(self):
+    def run(self, ip='127.0.0.1', port=8080):
         '''sets up the server and starts running it on the event loop
         '''
         # Each client connection will create a new protocol instance
-        coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), '127.0.0.1', 8080)
+        coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), ip, port)
         server = self.loop.run_until_complete(coro)
 
         # Serve requests until Ctrl+C is pressed
