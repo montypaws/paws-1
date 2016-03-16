@@ -40,6 +40,7 @@ class HttpRequest:
     body = ''
     resource = ''
     request_type = ''
+    params= {}
     wildcards={}
 
     def __init__(self, raw=None):
@@ -58,9 +59,21 @@ class HttpRequest:
 
         #print(data)
 
+        #determine type of request, and resource requested
         self.start_line = data.split(CRLF)[0]
         self.request_type = self.start_line.split(SP)[0].strip(SP)
         self.resource = self.start_line.split(SP)[1].strip(SP)
+
+        #process parameters
+        if '?' in self.resource:
+            self.resource, params = self.resource.split('?')
+            for param in params.split('&'):
+                key,token = param.split('=')
+                self.params[key]=token
+
+        #if ends with a / remove it
+        if self.resource.endswith('/') and len(self.resource) > 1:
+            self.resource = self.resource[:-1]
 
         #process headers and body
         in_headers = True

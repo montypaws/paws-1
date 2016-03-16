@@ -10,11 +10,9 @@ from paroute import Router
 
 env = Environment(loader=FileSystemLoader('templates'))
 
-def render_template(template, context):
+def render_template(template, **kwargs):
     template = env.get_template(template)
-    return template.render(context)
-
-
+    return template.render(**kwargs)
 
 class InjestServer:
     pool = None
@@ -64,6 +62,7 @@ class InjestServer:
         request = HttpRequest(raw)
         response = HttpResponse()
 
+        #process the response
         response = await self.process_route(request, response)
 
         #build response
