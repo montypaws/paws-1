@@ -1,4 +1,27 @@
 #!/usr/local/bin/python3
+'''
+The MIT License (MIT)
+
+Copyright (c) 2016 Erika Jonell (xevrem)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.o
+'''
 
 """
 uses a similar dynamic process as aiohttp
@@ -6,6 +29,8 @@ uses a similar dynamic process as aiohttp
 import re
 
 class Route:
+    '''simple class representing a route and its handler call_back
+    '''
     pattern=None
     call_back=None
     formatter=None
@@ -19,6 +44,8 @@ class Route:
         return self.pattern.match(path)
 
 class Match:
+    '''simple data structure representing a route match
+    '''
     match=None
     route=None
 
@@ -28,10 +55,9 @@ class Match:
 
 
 class Router:
-
+    '''dynamic route builder with heavy influence from aiohttp
+    '''
     DYN = re.compile(r'^\{(?P<var>[a-zA-Z][_a-zA-Z0-9]*)\}$')
-    DYN_WITH_RE = re.compile(
-        r'^\{(?P<var>[a-zA-Z][_a-zA-Z0-9]*):(?P<re>.+)\}$')
     GOOD = r'[^{}/]+'
     ROUTE_RE = re.compile(r'(\{[_a-zA-Z][^{}]*(?:\{[^{}]*\}[^{}]*)*\})')
 
@@ -52,14 +78,6 @@ class Router:
                     formatter += '{' + match.group('var') + '}'
                     continue
 
-                '''
-                match = DYN_WITH_RE.match(part)
-                if match:
-                    pattern += '(?P<{var}>{re})'.format(**match.groupdict())
-                    formatter += '{' + match.group('var') + '}'
-                    continue
-                '''
-
                 if '{' in part or '}' in part:
                     raise ValueError("Invalid path '{}'['{}']".format(path, part))
 
@@ -74,6 +92,8 @@ class Router:
 
 
     def parse_route(self, path):
+        '''attempt to find a matching route and return a Match if successful
+        '''
         for route in self.routes:
             match = route.match(path)
             if match:
@@ -82,7 +102,3 @@ class Router:
                 continue
 
         return None
-
-
-    def traverse_route(self, route_string):
-        pass

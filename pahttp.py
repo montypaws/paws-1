@@ -1,4 +1,27 @@
-#!/usr/bin/python3
+#!/usr/local/bin/python3
+'''
+The MIT License (MIT)
+
+Copyright (c) 2016 Erika Jonell (xevrem)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.o
+'''
 
 #constants
 CRLF = '\r\n'
@@ -9,6 +32,8 @@ STATUS_DICT = {'200':'OK',
 SEP = ':'
 
 class HttpResponse:
+    '''simple HTTP Response class
+    '''
     raw = None
     text = None
     headers_dict = {'content-type':'text/html'}
@@ -22,6 +47,8 @@ class HttpResponse:
         self.headers_dict[key] = value
 
     def _render(self):
+        '''renders all textual information into raw bytes
+        '''
         start_line = HTTP_STANDARD + SP + self.status + SP + STATUS_DICT[self.status] + CRLF
 
         headers=''
@@ -33,6 +60,8 @@ class HttpResponse:
 
 
 class HttpRequest:
+    '''simple HTTP Request class
+    '''
     raw = None
     text = None
     headers_dict = {}
@@ -50,14 +79,15 @@ class HttpRequest:
             pass
 
     def parse(self, raw):
+        '''attempts to parse the raw request data
+        '''
         self.raw = raw
 
+        #if data supplied as raw bytes, decode
         if type(self.raw) is bytes:
             data = self.raw.decode()
         else:
             data = self.raw
-
-        #print(data)
 
         #determine type of request, and resource requested
         self.start_line = data.split(CRLF)[0]
@@ -71,7 +101,7 @@ class HttpRequest:
                 key,token = param.split('=')
                 self.params[key]=token
 
-        #if ends with a / remove it
+        #if resource ends with a / remove it
         if self.resource.endswith('/') and len(self.resource) > 1:
             self.resource = self.resource[:-1]
 
@@ -89,8 +119,3 @@ class HttpRequest:
             else:
                 self.body = item
                 break
-
-        #print('start_line:\n{}'.format(self.start_line))
-        #print('headers:\n{}'.format(self.headers_dict))
-        #print('body:\n{}'.format(self.body))
-        #print('length: {}'.format(len(self.body)))
