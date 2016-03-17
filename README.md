@@ -4,7 +4,7 @@ A stupidly simple asyncronous python http server powered by Python 3.5 asyncio
 Installation
 ------------
 ```
-python setup.py install
+python3 setup.py install
 ```
 
 Example
