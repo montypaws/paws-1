@@ -3,7 +3,7 @@ A stupidly simple asyncronous python http server powered by Python 3.5 asyncio
 
 Installation
 ------------
-.. code-block:: bash
+.. code-block::
 
   python setup.py install
 
