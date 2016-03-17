@@ -27,7 +27,7 @@ uses a similar dynamic process as aiohttp
 """
 import re
 
-__all__ = ('Route', 'Match', 'Router')
+__all__ = ('Route', 'Router')
 
 class Route:
     '''simple class representing a route and its handler call_back
@@ -43,17 +43,6 @@ class Route:
 
     def match(self, path):
         return self.pattern.match(path)
-
-class Match:
-    '''simple data structure representing a route match
-    '''
-    match=None
-    route=None
-
-    def __init__(self, match, route):
-        self.match = match
-        self.route = route
-
 
 class Router:
     '''dynamic route builder with heavy influence from aiohttp
@@ -93,7 +82,7 @@ class Router:
 
 
     def match_request(self, request):
-        '''attempt to find a matching route and return a Match if successful
+        '''attempt to find a matching route and return a it if successful
         '''
         for route in self.routes:
             match = route.match(request.resource)
