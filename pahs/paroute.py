@@ -92,13 +92,14 @@ class Router:
 
 
 
-    def parse_route(self, path):
+    def match_request(self, request):
         '''attempt to find a matching route and return a Match if successful
         '''
         for route in self.routes:
-            match = route.match(path)
+            match = route.match(request.resource)
             if match:
-                return Match(match, route)
+                request.wildcards = match.groupdict()
+                return route
             else:
                 continue
 

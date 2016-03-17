@@ -111,13 +111,12 @@ class InjestServer:
         """basic routing processing
         """
 
-        #attempt to match the route
-        match = self.router.parse_route(request.resource)
+        #attempt to match the request to a route
+        route = self.router.match_request(request)
 
         #execute the route if found or return bad-route
-        if match:
-            request.wildcards = match.match.groupdict()
-            return await match.route.call_back(request, response)
+        if route:
+            return await route.call_back(request, response)
         else:
             return self.bad_route(request, response)
 
