@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3
 '''
 The MIT License (MIT)
 
@@ -27,6 +26,8 @@ SOFTWARE.o
 uses a similar dynamic process as aiohttp
 """
 import re
+
+__all__ = ('Route', 'Match', 'Router')
 
 class Route:
     '''simple class representing a route and its handler call_back

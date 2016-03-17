@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/env python3
 '''
 The MIT License (MIT)
 
@@ -24,12 +24,12 @@ SOFTWARE.o
 '''
 
 import asyncio
-import pahttp
-from pahs import InjestServer, render_template
-import config
 import json
-import content
 
+from pahs import pahttp, InjestServer, render_template
+
+import content
+import config
 
 async def root(request, response):
     response.body = render_template('root.html', nav_list= await content.get_nav())

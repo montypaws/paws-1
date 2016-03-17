@@ -1,4 +1,3 @@
-#!/usr/local/bin/python3
 '''
 The MIT License (MIT)
 
@@ -23,13 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.o
 '''
 
-import multiprocessing as mp
 import asyncio
-from jinja2 import Environment, FileSystemLoader
-import config
 import json
-from pahttp import HttpRequest, HttpResponse
-from paroute import Router
+
+from jinja2 import Environment, FileSystemLoader
+
+from .pahttp import HttpRequest, HttpResponse
+from .paroute import Router
+
+__all__ = ('InjestServer', 'InjestProtocol', 'render_template')
 
 #setup jinja2 env
 env = Environment(loader=FileSystemLoader('templates'))
@@ -42,7 +43,6 @@ def render_template(template, **kwargs):
 class InjestServer:
     '''main HTTP server
     '''
-    pool = None
     router = None
     loop = None
     is_running=False
@@ -146,12 +146,3 @@ class InjestProtocol(asyncio.Protocol):
     def data_received(self, data):
         #handle the request
         asyncio.ensure_future(self.request_handler(raw=data, transport=self.transport))
-
-
-
-def main():
-    server = InjestServer()
-    server.run()
-
-if __name__ == '__main__':
-    main()
