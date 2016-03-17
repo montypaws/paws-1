@@ -1,9 +1,15 @@
 #Python Async HTTP Server (pahs)
 A stupidly simple asyncronous python http server powered by Python 3.5 asyncio
 
+Installation
+------------
+.. code-block:: bash
+
+  python setup.py install
+
 Example
 -------
-Run app.py from a console to see a simple example
+Run app.py from the example folder to see a simple example use of pahs
 
 
 Requirements
