@@ -1,4 +1,4 @@
-#Python Async Web Server (paws)
+#Python Async Web Server (paws) 🐾
 A stupidly simple and insanely fast multi-process asyncronous python web server powered by Python 3.5 asyncio
 
 Installation
