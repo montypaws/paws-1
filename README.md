@@ -1,5 +1,5 @@
-#Python Async HTTP Server (pahs)
-A stupidly simple asyncronous python http server powered by Python 3.5 asyncio
+#Python Async Web Server (paws)
+A stupidly simple and insanely fast multi-process asyncronous python web server powered by Python 3.5 asyncio
 
 Installation
 ------------
@@ -9,7 +9,7 @@ python3 setup.py install
 
 Example
 -------
-Run app.py from the example folder to see a simple example use of pahs
+Run app.py from the example folder to see a simple example use of paws
 
 
 Requirements
@@ -20,4 +20,4 @@ Requirements
 
 License
 -------
-pahs is offered under the MIT license
+paws is offered under the MIT license

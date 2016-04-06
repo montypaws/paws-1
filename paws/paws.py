@@ -24,13 +24,15 @@ SOFTWARE.o
 
 import asyncio
 import json
+import socket
+from multiprocessing import Process
 
 from jinja2 import Environment, FileSystemLoader
 
 from .pahttp import HttpRequest, HttpResponse
 from .paroute import Router
 
-__all__ = ('InjestServer', 'InjestProtocol', 'render_template')
+__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server')
 
 #setup jinja2 env
 env = Environment(loader=FileSystemLoader('templates'))
@@ -48,15 +50,30 @@ class InjestServer:
     is_running=False
     task_queue=[]
 
-    def __init__(self):
-        self.loop = asyncio.get_event_loop()
+    def __init__(self, host='127.0.0.1', port=8080, sock=None):
         self.router = Router()
+        self.host = host
+        self.port = port
 
-    def run(self, ip='127.0.0.1', port=8080):
+        if sock:
+            self.sock = sock
+        else:
+            #if no socket specified create one
+            sock = socket.socket()
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind((ip, port))
+            sock.listen(1024)
+            sock.setblocking(False)
+            self.sock = sock
+
+    def run(self):
         '''sets up the server and starts running it on the event loop
         '''
+        self.loop = loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+
         # Each client connection will create a new protocol instance
-        coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), ip, port)
+        coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), backlog=1024, sock=self.sock)
         server = self.loop.run_until_complete(coro)
 
         # Serve requests until Ctrl+C is pressed
@@ -145,3 +162,27 @@ class InjestProtocol(asyncio.Protocol):
     def data_received(self, data):
         #handle the request
         asyncio.ensure_future(self.request_handler(raw=data, transport=self.transport))
+
+
+
+def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2):
+
+    sock = socket.socket()
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((host, port))
+    sock.listen(1024)
+    sock.setblocking(False)
+
+    procs = []
+
+    for i in range(processes):
+        app = InjestServer(host=host, port=port, sock=sock)
+
+        routing_cb(app)
+
+        p = Process(target=app.run)
+        procs.append(p)
+        p.start()
+
+    for proc in procs:
+        proc.join()

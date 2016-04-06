@@ -25,8 +25,10 @@ SOFTWARE.o
 
 import asyncio
 import json
+from multiprocessing import Process
+import socket
 
-from pahs import pahttp, InjestServer, render_template
+from paws import pahttp, render_template, run_server
 
 import content
 import config
@@ -78,9 +80,7 @@ async def clear_cache():
     print('cache cleared...')
 
 
-def main():
-    app = InjestServer()
-
+def routing(app):
     app.add_route('/', root)
     app.add_route('/index', index)
     app.add_route('/static/{filename}', static)
@@ -89,9 +89,10 @@ def main():
     app.add_route('/profile', profile)
     app.add_route('/profile/{uid}', profile)
 
-    #app.add_task(clear_cache)
 
-    app.run()
+def main():
+
+    run_server(routing_cb=routing, host='127.0.0.1', port=8080)
 
 
 if __name__ == '__main__':
