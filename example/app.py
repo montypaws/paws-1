@@ -25,8 +25,6 @@ SOFTWARE.o
 
 import asyncio
 import json
-from multiprocessing import Process
-import socket
 
 from paws import pahttp, render_template, run_server
 
@@ -74,6 +72,10 @@ async def profile(req,res):
     res.body = render_template('profile.html', nav_list= await content.get_nav(), uid=uid)
     return res
 
+async def file(req,res):
+    res.body = await content.get_html_asset('large.html')
+    return res
+
 
 async def clear_cache():
     content.CACHE = {}
@@ -88,11 +90,12 @@ def routing(app):
     app.add_route('/page/{aid}', page)
     app.add_route('/profile', profile)
     app.add_route('/profile/{uid}', profile)
-
+    app.add_route('/file', file)
 
 def main():
 
-    run_server(routing_cb=routing, host='127.0.0.1', port=8080, processes=8)
+    run_server(routing_cb=routing, host='127.0.0.1', port=8080, 
+processes=4)
 
 
 if __name__ == '__main__':
