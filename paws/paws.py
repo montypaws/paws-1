@@ -38,7 +38,7 @@ __all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server')
 #setup jinja2 env
 env = Environment(loader=FileSystemLoader('templates'))
 
-#asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 def render_template(template, **kwargs):
     #simple template render handler
