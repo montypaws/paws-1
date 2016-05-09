@@ -32,7 +32,7 @@ default:
 
 if using uvloop:
 - libuv
-- [uvloop](http://github/magicstack/uvloop) >= 0.4.11
+- [uvloop](http://github.com/magicstack/uvloop) >= 0.4.11
 
 License
 -------
