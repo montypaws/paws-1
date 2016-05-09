@@ -28,7 +28,6 @@ import socket
 from multiprocessing import Process
 
 from jinja2 import Environment, FileSystemLoader
-import uvloop
 
 from .pahttp import HttpRequest, HttpResponse
 from .paroute import Router
@@ -38,7 +37,6 @@ __all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server')
 #setup jinja2 env
 env = Environment(loader=FileSystemLoader('templates'))
 
-asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 def render_template(template, **kwargs):
     #simple template render handler
@@ -169,7 +167,12 @@ class InjestProtocol(asyncio.Protocol):
 
 
 
-def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2):
+def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uvloop=False):
+
+    if use_uvloop:
+        import uvloop
+        asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+
 
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

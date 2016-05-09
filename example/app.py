@@ -94,8 +94,8 @@ def routing(app):
 
 def main():
 
-    run_server(routing_cb=routing, host='127.0.0.1', port=8080, 
-processes=4)
+    run_server(routing_cb=routing, host='127.0.0.1', port=8080,
+processes=4, use_uvloop=True)
 
 
 if __name__ == '__main__':
