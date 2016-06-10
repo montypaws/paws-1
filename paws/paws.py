@@ -26,10 +26,11 @@ import asyncio
 import json
 import socket
 from multiprocessing import Process
+import signal
 
 from jinja2 import Environment, FileSystemLoader
 
-from .pahttp import HttpRequest, HttpResponse
+from .pahttp import HttpRequest, HttpResponse, STATUS_DICT
 from .paroute import Router
 
 __all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server')
@@ -145,7 +146,7 @@ class InjestServer:
         '''simple bad-route response
         '''
         response.status = '404'
-        response.body = '<h1>404 Not Found - BAD ROUTE</h1>'
+        response.body = STATUS_DICT['404']
         return response
 
 
@@ -167,6 +168,7 @@ class InjestProtocol(asyncio.Protocol):
 
 
 
+
 def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uvloop=False):
 
     if use_uvloop:
@@ -182,6 +184,22 @@ def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uv
     sock.setblocking(False)
 
     procs = []
+
+    def interupt_signal(signum, frame):
+        #process interrupt signal
+        print('PAWS Shutting Down...')
+
+        for proc in procs:
+            if proc:
+                proc.terminate()
+                print('process terminated...')
+
+        print('PAWS Shut down...')
+
+    #set intterupt signal catcher
+    signal.signal(signal.SIGINT, interupt_signal)
+
+
 
     for i in range(processes):
         app = InjestServer(host=host, port=port, sock=sock)
