@@ -27,13 +27,15 @@ import json
 import socket
 from multiprocessing import Process
 import signal
+from urllib.parse import urlparse
+import ssl
 
 from jinja2 import Environment, FileSystemLoader
 
 from .pahttp import HttpRequest, HttpResponse, STATUS_DICT
 from .paroute import Router
 
-__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server')
+__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'get', 'put', 'post', 'delete')
 
 #setup jinja2 env
 env = Environment(loader=FileSystemLoader('templates'))
@@ -43,6 +45,7 @@ def render_template(template, **kwargs):
     #simple template render handler
     template = env.get_template(template)
     return template.render(**kwargs)
+
 
 class InjestServer:
     '''main HTTP server
@@ -150,8 +153,6 @@ class InjestServer:
         return response
 
 
-
-
 class InjestProtocol(asyncio.Protocol):
     '''basic asyncio protocol for handling all incoming requests
     '''
@@ -167,6 +168,99 @@ class InjestProtocol(asyncio.Protocol):
         asyncio.ensure_future(self.request_handler(raw=data, transport=self.transport))
 
 
+async def get(url, port=80, ssl_context=False, headers={}, body=""):
+    '''basic get request
+    '''
+    return await do_request(url, port, ssl_context, "GET", headers, body)
+
+
+async def post(url, port=80, ssl_context=False, headers={}, body=""):
+    '''basic post request
+    '''
+    return await do_request(url, port, ssl_context, "POST", headers, body)
+
+
+async def delete(url, port=80, ssl_context=False, headers={}, body=""):
+    '''basic delete request
+    '''
+    return await do_request(url, port, ssl_context, "DELETE", headers, body)
+
+
+async def put(url, port=80, ssl_context=False, headers={}, body=""):
+    '''basic put request
+    '''
+    return await do_request(url, port, ssl_context, "PUT", headers, body)
+
+
+async def do_request(url, port, ssl_context, method, headers, body):
+    '''enacts a request
+    '''
+    loop = asyncio.get_event_loop()
+
+    parsed = urlparse(url)
+
+    #set default headers
+    default_headers = {"Host" : "127.0.0.1", "User-Agent" : "paws/1.0.0", "Content-Type" : "text/html; charset=utf-8", "Connection" : "close"}
+
+    #merge headers
+    for key in default_headers.keys():
+        if key in headers.keys():
+            continue
+        else:
+            headers[key] = default_headers[key]
+
+    #establish the connection
+    conn = loop.create_connection(lambda: RequestProtocol(parsed.path, method=method, headers=headers), host=parsed.netloc, port=port if not ssl_context else 443, ssl=ssl_context, server_hostname=parsed.netloc if ssl_context else None)
+
+    trans, proto = await loop.create_task(conn)
+
+    #await for the request to complete
+    data = await proto.request_complete()
+
+    #return the data
+    return data
+
+
+class RequestProtocol(asyncio.Protocol):
+
+    data_complete = False
+    data = b''
+
+    def __init__(self, resource, method="GET", headers={}, body=""):
+        request = HttpRequest()
+        request.resource = resource
+        request.method = method
+        request.headers = headers
+        request.body = body
+        request._render()
+        self.foo = request
+
+    def connection_made(self, transport):
+        self.transport = transport
+        self.transport.write(self.foo.raw)
+
+
+    def data_received(self, data):
+        self.data += data
+
+
+    def eof_received(self):
+        self.data_complete = True
+        self.transport.close()
+
+
+    def connection_lost(self, ex):
+        self.data_complete = True
+        self.transport.close()
+
+
+    @asyncio.coroutine
+    def request_complete(self):
+        while not self.data_complete:
+            yield
+            continue
+
+        return self.data
 
 
 def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uvloop=False):

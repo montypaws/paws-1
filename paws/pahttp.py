@@ -93,9 +93,10 @@ EQ = '='
 class HttpResponse:
     '''simple HTTP Response class
     '''
+    http_standard = HTTP_STANDARD
     raw = None
     text = None
-    headers_dict = {'content-type':'text/html'}
+    headers = {'content-type':'text/html'}
     status = ''
     body = ""
 
@@ -103,18 +104,18 @@ class HttpResponse:
         self.status = str(status)
 
     def add_header(self, key, value):
-        self.headers_dict[key] = value
+        self.headers[key] = value
 
     def _render(self):
         '''renders all textual information into raw bytes
         '''
         start_line = HTTP_STANDARD + SP + self.status + SP + STATUS_DICT[self.status] + CRLF
 
-        headers=''
-        for key, value in self.headers_dict.items():
-            headers += key + SEP + value + CRLF
+        hdrs=''
+        for key, value in self.headers.items():
+            hdrs += key + SEP + value + CRLF
 
-        self.text = start_line + headers + CRLF + self.body
+        self.text = start_line + hdrs + CRLF + self.body
         self.raw = self.text.encode()
 
 
@@ -123,11 +124,12 @@ class HttpRequest:
     '''
     raw = None
     text = None
-    headers_dict = {}
+    http_standard = HTTP_STANDARD
+    headers = {}
     status = None
     body = ''
     resource = ''
-    request_type = ''
+    method = ''
     params= {}
     wildcards={}
 
@@ -136,6 +138,9 @@ class HttpRequest:
             self.parse(raw)
         else:
             pass
+
+    def add_header(self, key, value):
+        self.headers[key] = value
 
     def parse(self, raw):
         '''attempts to parse the raw request data
@@ -150,7 +155,7 @@ class HttpRequest:
 
         #determine type of request, and resource requested
         self.start_line = data.split(CRLF)[0]
-        self.request_type = self.start_line.split(SP)[0].strip(SP)
+        self.method = self.start_line.split(SP)[0].strip(SP)
         self.resource = self.start_line.split(SP)[1].strip(SP)
 
         #process parameters
@@ -172,9 +177,21 @@ class HttpRequest:
                 k = item[:index]
                 if k:
                     v = item[index+1:].strip(SP)
-                    self.headers_dict[k] = v
+                    self.headers[k] = v
                 else:
                     in_headers = False
             else:
                 self.body = item
                 break
+
+    def _render(self):
+        '''renders all textual information into raw bytes
+        '''
+        start_line = self.method + SP + self.resource + SP + self.http_standard + CRLF
+
+        hdrs=''
+        for key, value in self.headers.items():
+            hdrs += key + SEP + value + CRLF
+
+        self.text = start_line + hdrs + CRLF + self.body + CRLF
+        self.raw = self.text.encode()
