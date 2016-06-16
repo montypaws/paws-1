@@ -21,7 +21,7 @@ PAWS now has the ability to perform asyncronous requests via new `get`, `put`, `
 
 Older News:
 -----------
-PAWS now has support for [uvloop](http://github.com/magicstack/uvloop) allowing increased speed by replacing the default asyncio loop construct with one running on top of libuv. By default uvloop is NOT used. To use it, pass `use_uvloop=True` in the arguments for `run_server()`
+PAWS has support for [uvloop](http://github.com/magicstack/uvloop) allowing increased speed by replacing the default asyncio loop construct with one running on top of libuv. By default uvloop is NOT used. To use it, pass `use_uvloop=True` in the arguments for `run_server()`
 
 Example
 -------
