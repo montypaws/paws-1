@@ -55,10 +55,11 @@ class InjestServer:
     is_running=False
     task_queue=[]
 
-    def __init__(self, host='127.0.0.1', port=8080, sock=None):
+    def __init__(self, host='127.0.0.1', port=8080, sock=None, debug=False):
         self.router = Router()
         self.host = host
         self.port = port
+        self.debug = debug
 
         if sock:
             self.sock = sock
@@ -113,6 +114,7 @@ class InjestServer:
         '''
         self.router.add_route(route, call_back)
 
+
     async def handle_request(self, raw=None, transport=None):
         '''handles an incomming HTTP request
         '''
@@ -123,12 +125,16 @@ class InjestServer:
         #process the response
         response = await self.process_route(request, response)
 
+        if self.debug:
+            print('{} [{}-{}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
+
         #build response
         response._render()
 
         #send response and close connection
         transport.write(response.raw)
         transport.close()
+
 
     async def process_route(self, request, response):
         """basic routing processing
@@ -142,7 +148,6 @@ class InjestServer:
             return await route.call_back(request, response)
         else:
             return self.bad_route(request, response)
-
 
 
     def bad_route(self, request, response):
@@ -263,7 +268,7 @@ class RequestProtocol(asyncio.Protocol):
         return self.data
 
 
-def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uvloop=False):
+def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uvloop=False, debug=False):
 
     if use_uvloop:
         import uvloop
@@ -296,7 +301,7 @@ def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uv
 
 
     for i in range(processes):
-        app = InjestServer(host=host, port=port, sock=sock)
+        app = InjestServer(host=host, port=port, sock=sock, debug=debug)
 
         routing_cb(app)
 
