@@ -19,7 +19,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.o
+SOFTWARE.
 '''
 
 import asyncio
@@ -34,6 +34,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from .pahttp import HttpRequest, HttpResponse, STATUS_DICT
 from .paroute import Router
+from .palog import AsyncLogger
 
 __all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'get', 'put', 'post', 'delete')
 
@@ -54,6 +55,8 @@ class InjestServer:
     loop = None
     is_running=False
     task_queue=[]
+    debug = False
+    log = None
 
     def __init__(self, host='127.0.0.1', port=8080, sock=None, debug=False):
         self.router = Router()
@@ -79,12 +82,14 @@ class InjestServer:
         self.loop = loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
+        self.log = AsyncLogger(loop=self.loop, debug=self.debug)
+
         # Each client connection will create a new protocol instance
         coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), backlog=1024, sock=self.sock)
         server = self.loop.run_until_complete(coro)
 
         # Serve requests until Ctrl+C is pressed
-        print('listening on {}'.format(server.sockets[0].getsockname()))
+        self.log.log('listening on {}'.format(server.sockets[0].getsockname()))
 
         try:
             #see if there are tasks to initialize
@@ -126,7 +131,7 @@ class InjestServer:
         response = await self.process_route(request, response)
 
         if self.debug:
-            print('{} [{}-{}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
+            self.log.log('{} [{} - {}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
 
         #build response
         response._render()
@@ -274,6 +279,8 @@ def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uv
         import uvloop
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
+    #setup logger
+    log = AsyncLogger(loop=asyncio.get_event_loop(), debug=debug)
 
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

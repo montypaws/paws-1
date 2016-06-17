@@ -1,10 +1,3 @@
-__version__ = '0.1.0'
+__version__ = '1.1.0'
 
-from .paws import *
-from .pahttp import *
-from .paroute import *
-
-
-__all__ = (paws.__all__ +
-           pahttp.__all__ +
-           paroute.__all__)
+__all__ = ('paws', 'paroute', 'pahttp', 'palog')
