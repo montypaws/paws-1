@@ -219,8 +219,10 @@ async def do_request(url, port, ssl_context, method, headers, body):
         else:
             headers[key] = default_headers[key]
 
+    print(headers)
+
     #establish the connection
-    conn = loop.create_connection(lambda: RequestProtocol(parsed.path, method=method, headers=headers), host=parsed.netloc, port=port if not ssl_context else 443, ssl=ssl_context, server_hostname=parsed.netloc if ssl_context else None)
+    conn = loop.create_connection(lambda: RequestProtocol(parsed.path, method=method, headers=headers, body=body), host=parsed.netloc, port=port, ssl=ssl_context, server_hostname=parsed.netloc if ssl_context else None)
 
     trans, proto = await loop.create_task(conn)
 

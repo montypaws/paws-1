@@ -25,8 +25,19 @@ PAWS has support for [uvloop](http://github.com/magicstack/uvloop) allowing incr
 
 Example
 -------
-Run app.py from the example folder to see a simple example use of paws
 
+```
+from paws.paws import run_server
+
+async def root(req, res):
+  res.body = "hello world!"
+  return res
+
+def routing(app):
+  app.add_route("/", root)
+
+run_server(routing_cb=routing, host="127.0.0.1", port=8080, processes=4)
+```
 
 Requirements
 ------------
