@@ -26,7 +26,8 @@ SOFTWARE.o
 import asyncio
 import json
 
-from paws import pahttp, render_template, run_server
+from paws import pahttp
+from paws.paws import render_template, run_server, get
 
 import content
 import config
@@ -76,6 +77,11 @@ async def file(req,res):
     res.body = await content.get_html_asset('large.html')
     return res
 
+async def reddit(req,res):
+    data = await get(url='https://www.reddit.com/', port=443, ssl_context=True, headers={}, debug=True)
+    parsed = pahttp.HttpRequest(data)
+    res.body = parsed.body
+    return res
 
 async def clear_cache():
     content.CACHE = {}
@@ -91,11 +97,12 @@ def routing(app):
     app.add_route('/profile', profile)
     app.add_route('/profile/{uid}', profile)
     app.add_route('/file', file)
+    app.add_route('/reddit', reddit)
 
 def main():
 
     run_server(routing_cb=routing, host='127.0.0.1', port=8080,
-processes=4, use_uvloop=False)
+processes=4, use_uvloop=False, debug=False)
 
 
 if __name__ == '__main__':

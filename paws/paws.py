@@ -36,10 +36,12 @@ from .pahttp import HttpRequest, HttpResponse, STATUS_DICT
 from .paroute import Router
 from .palog import AsyncLogger
 
-__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'get', 'put', 'post', 'delete')
+__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'logger', 'get', 'put', 'post', 'delete')
 
 #setup jinja2 env
 env = Environment(loader=FileSystemLoader('templates'))
+
+logger = AsyncLogger()
 
 
 def render_template(template, **kwargs):
@@ -82,14 +84,14 @@ class InjestServer:
         self.loop = loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        self.log = AsyncLogger(loop=self.loop, debug=self.debug)
+        logger = AsyncLogger(loop=self.loop, debug=self.debug)
 
         # Each client connection will create a new protocol instance
         coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), backlog=1024, sock=self.sock)
         server = self.loop.run_until_complete(coro)
 
         # Serve requests until Ctrl+C is pressed
-        self.log.log('listening on {}'.format(server.sockets[0].getsockname()))
+        logger.log('listening on {}'.format(server.sockets[0].getsockname()))
 
         try:
             #see if there are tasks to initialize
@@ -130,8 +132,7 @@ class InjestServer:
         #process the response
         response = await self.process_route(request, response)
 
-        if self.debug:
-            self.log.log('{} [{} - {}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
+        logger.log('{} [{} - {}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
 
         #build response
         response._render()
@@ -178,31 +179,31 @@ class InjestProtocol(asyncio.Protocol):
         asyncio.ensure_future(self.request_handler(raw=data, transport=self.transport))
 
 
-async def get(url, port=80, ssl_context=False, headers={}, body=""):
+async def get(url, port=80, ssl_context=False, headers={}, body="", debug=False):
     '''basic get request
     '''
-    return await do_request(url, port, ssl_context, "GET", headers, body)
+    return await do_request(url, port, ssl_context, "GET", headers, body, debug)
 
 
-async def post(url, port=80, ssl_context=False, headers={}, body=""):
+async def post(url, port=80, ssl_context=False, headers={}, body="", debug=False):
     '''basic post request
     '''
-    return await do_request(url, port, ssl_context, "POST", headers, body)
+    return await do_request(url, port, ssl_context, "POST", headers, body, debug)
 
 
-async def delete(url, port=80, ssl_context=False, headers={}, body=""):
+async def delete(url, port=80, ssl_context=False, headers={}, body="", debug=False):
     '''basic delete request
     '''
-    return await do_request(url, port, ssl_context, "DELETE", headers, body)
+    return await do_request(url, port, ssl_context, "DELETE", headers, body, debug)
 
 
-async def put(url, port=80, ssl_context=False, headers={}, body=""):
+async def put(url, port=80, ssl_context=False, headers={}, body="", debug=False):
     '''basic put request
     '''
-    return await do_request(url, port, ssl_context, "PUT", headers, body)
+    return await do_request(url, port, ssl_context, "PUT", headers, body, debug)
 
 
-async def do_request(url, port, ssl_context, method, headers, body):
+async def do_request(url, port, ssl_context, method, headers, body, debug):
     '''enacts a request
     '''
     loop = asyncio.get_event_loop()
@@ -210,7 +211,10 @@ async def do_request(url, port, ssl_context, method, headers, body):
     parsed = urlparse(url)
 
     #set default headers
-    default_headers = {"Host" : "127.0.0.1", "User-Agent" : "paws/1.0.0", "Content-Type" : "text/html; charset=utf-8", "Connection" : "close"}
+    default_headers = {"Host" : "127.0.0.1",
+        "User-Agent" : "paws/1.0.0",
+        "Content-Type" : "text/html; charset=utf-8",
+        "Connection" : "close"}
 
     #merge headers
     for key in default_headers.keys():
@@ -219,7 +223,13 @@ async def do_request(url, port, ssl_context, method, headers, body):
         else:
             headers[key] = default_headers[key]
 
-    print(headers)
+    headers['Host'] = parsed.netloc
+
+    logger.log("Path: " + parsed.path, force_log=debug)
+    logger.log("Netloc: " + parsed.netloc, force_log=debug)
+    logger.log("Method: " + method, force_log=debug)
+    logger.log("Headers: {}".format(headers), force_log=debug)
+    logger.log("Body: " + body, force_log=debug)
 
     #establish the connection
     conn = loop.create_connection(lambda: RequestProtocol(parsed.path, method=method, headers=headers, body=body), host=parsed.netloc, port=port, ssl=ssl_context, server_hostname=parsed.netloc if ssl_context else None)
@@ -282,7 +292,7 @@ def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uv
         asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
     #setup logger
-    log = AsyncLogger(loop=asyncio.get_event_loop(), debug=debug)
+    logger = AsyncLogger(loop=asyncio.get_event_loop(), debug=debug)
 
     sock = socket.socket()
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)

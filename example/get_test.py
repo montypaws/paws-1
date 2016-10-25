@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 '''
 The MIT License (MIT)
 
@@ -23,24 +24,22 @@ SOFTWARE.
 '''
 
 import asyncio
+from paws.paws import get
+from paws.pahttp import HttpRequest
 
-__all__ = ('AsyncLogger')
 
-class AsyncLogger:
+async def do_get():
+	#{'Host':'172.56.29.245'}
+	data = await get(url='https://www.reddit.com/', port=443, ssl_context=True, headers={}, debug=True)
+	req = HttpRequest(data)
+	print(req.headers)
 
-    def __init__(self, debug=False, loop=None):
-        if not loop:
-            self.loop = asyncio.get_event_loop()
-        else:
-            self.loop =loop
-        self.debug = debug
+def main():
+	loop = asyncio.get_event_loop()	
+	task = asyncio.ensure_future(do_get())
+	loop.run_until_complete	(task)
+	loop.close()
 
-    def log(self, message, force_log=False):
-        if self.debug or force_log:
-            self.loop.create_task(self._do_log(message))	
-        else:
-            pass
-    
-    @asyncio.coroutine
-    def _do_log(self, message):
-        yield print(message)
+
+if __name__ == '__main__':
+	main()
