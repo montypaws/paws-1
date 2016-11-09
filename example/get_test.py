@@ -26,20 +26,61 @@ SOFTWARE.
 import asyncio
 from paws.paws import get
 from paws.pahttp import HttpRequest
+from time import time
+import signal
+import uvloop
+from multiprocessing import Process
 
+start = 0.0
+finish = 0.0
+count = 100000
+num_procs = 4
+num = int(count/num_procs)
 
 async def do_get():
-	#{'Host':'172.56.29.245'}
-	data = await get(url='https://www.reddit.com/', port=443, ssl_context=True, headers={}, debug=True)
-	req = HttpRequest(data)
-	print(req.headers)
+    data = await get(url='http://localhost/hello', port=8080, ssl_context=False, 
+        headers={}, debug=False)
+    req = HttpRequest(data)
+    #finish = clock()
+    #print("req complete...")
+
+
+def do_test():
+    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+    loop = asyncio.get_event_loop()
+    for i in range(num):
+        foo = asyncio.ensure_future(do_get())
+        loop.run_until_complete(foo)
 
 def main():
-	loop = asyncio.get_event_loop()	
-	task = asyncio.ensure_future(do_get())
-	loop.run_until_complete	(task)
-	loop.close()
+    procs = []
 
+    def finished(signum, frame):
+        total = finish-start
+        print("total time: {} ms/req".format(total * 1000))
+        
+        for proc in procs:
+            if proc:
+                proc.terminate()
+    
+    
+    signal.signal(signal.SIGINT, finished)
+    
+    start = time()
+
+    for i in range(num_procs):
+        p = Process(target=do_test)
+        procs.append(p)
+        p.start()
+
+    for proc in procs:
+        proc.join()
+    
+    finish = time()
+
+    total = finish-start
+    print("total time: {} ms".format((total * 1000)))
+    print("reqs per sec: {}".format((num*num_procs)/total))
 
 if __name__ == '__main__':
-	main()
+    main()

@@ -87,6 +87,10 @@ async def clear_cache():
     content.CACHE = {}
     print('cache cleared...')
 
+async def hello(req,res):
+    res.body = 'hello world'
+    return res
+
 
 def routing(app):
     app.add_route('/', root)
@@ -98,11 +102,12 @@ def routing(app):
     app.add_route('/profile/{uid}', profile)
     app.add_route('/file', file)
     app.add_route('/reddit', reddit)
+    app.add_route('/hello', hello)
 
 def main():
 
     run_server(routing_cb=routing, host='127.0.0.1', port=8080,
-processes=4, use_uvloop=False, debug=False)
+processes=8, use_uvloop=True, debug=False)
 
 
 if __name__ == '__main__':
