@@ -107,7 +107,7 @@ def routing(app):
 def main():
 
     run_server(routing_cb=routing, host='127.0.0.1', port=8080,
-processes=8, use_uvloop=True, debug=False)
+processes=8, use_uvloop=True, debug=True)
 
 
 if __name__ == '__main__':

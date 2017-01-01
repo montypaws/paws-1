@@ -27,7 +27,8 @@ import asyncio
 __all__ = ('AsyncLogger')
 
 class AsyncLogger:
-
+    '''logger that appends logging futures to the event loop to help reduce I/O impact of print statements
+    '''
     def __init__(self, debug=False, loop=None):
         if not loop:
             self.loop = asyncio.get_event_loop()
@@ -37,10 +38,10 @@ class AsyncLogger:
 
     def log(self, message, force_log=False):
         if self.debug or force_log:
-            self.loop.create_task(self._do_log(message))	
+            asyncio.ensure_future(self._do_log(message))
         else:
             pass
-    
+
     @asyncio.coroutine
     def _do_log(self, message):
         yield print(message)

@@ -39,8 +39,9 @@ from .palog import AsyncLogger
 __all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'logger', 'get', 'put', 'post', 'delete')
 
 #setup jinja2 env
-env = Environment(loader=FileSystemLoader('templates'))
+global logger, env
 
+env = Environment(loader=FileSystemLoader('templates'))
 logger = AsyncLogger()
 
 
@@ -84,14 +85,14 @@ class InjestServer:
         self.loop = loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
 
-        logger = AsyncLogger(loop=self.loop, debug=self.debug)
+        self.log = AsyncLogger(loop=self.loop, debug=self.debug)
 
         # Each client connection will create a new protocol instance
         coro = self.loop.create_server(lambda: InjestProtocol(self.loop, self.handle_request), backlog=1024, sock=self.sock)
         server = self.loop.run_until_complete(coro)
 
         # Serve requests until Ctrl+C is pressed
-        logger.log('listening on {}'.format(server.sockets[0].getsockname()))
+        self.log.log('listening on {}'.format(server.sockets[0].getsockname()))
 
         try:
             #see if there are tasks to initialize
@@ -110,7 +111,8 @@ class InjestServer:
             self.loop.close()
 
     def add_task(self, task):
-        '''queues a task for startup or issues it on active event loop'''
+        '''queues a task for startup or issues it on active event loop
+        '''
         if self.is_running:
             asyncio.ensure_future(task())
         else:
@@ -132,7 +134,7 @@ class InjestServer:
         #process the response
         response = await self.process_route(request, response)
 
-        logger.log('{} [{} - {}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
+        self.log.log('{} [{} - {}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
 
         #build response
         response._render()
@@ -206,6 +208,8 @@ async def put(url, port=80, ssl_context=False, headers={}, body="", debug=False)
 async def do_request(url, port, ssl_context, method, headers, body, debug):
     '''enacts a request
     '''
+    global logger
+
     loop = asyncio.get_event_loop()
 
     parsed = urlparse(url)
@@ -244,6 +248,8 @@ async def do_request(url, port, ssl_context, method, headers, body, debug):
 
 
 class RequestProtocol(asyncio.Protocol):
+    '''Main single-shot request protocol
+    '''
 
     data_complete = False
     data = b''
@@ -286,6 +292,8 @@ class RequestProtocol(asyncio.Protocol):
 
 
 def run_server(routing_cb=None, host='127.0.0.1', port=8080, processes=2, use_uvloop=False, debug=False):
+    '''initializes and launches the PAWS server
+    '''
 
     if use_uvloop:
         import uvloop
