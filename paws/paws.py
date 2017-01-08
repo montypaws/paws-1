@@ -74,7 +74,7 @@ class InjestServer:
             sock = socket.socket()
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            sock.bind((ip, port))
+            sock.bind((host, port))
             sock.listen(1024)
             sock.setblocking(False)
             self.sock = sock
