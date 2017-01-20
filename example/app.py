@@ -79,7 +79,7 @@ async def file(req,res):
 
 async def reddit(req,res):
     data = await get(url='https://www.reddit.com/', port=443, ssl_context=True, headers={}, debug=True)
-    parsed = pahttp.HttpRequest(data)
+    parsed = pahttp.http_data_create(data)
     res.body = parsed.body
     return res
 
@@ -107,7 +107,7 @@ def routing(app):
 def main():
 
     run_server(routing_cb=routing, host='127.0.0.1', port=8080,
-processes=8, use_uvloop=True, debug=True)
+processes=8, use_uvloop=False, debug=True)
 
 
 if __name__ == '__main__':

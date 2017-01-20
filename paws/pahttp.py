@@ -1,7 +1,7 @@
 '''
 The MIT License (MIT)
 
-Copyright (c) 2016 Erika Jonell (xevrem)
+Copyright (c) 2016, 2017 Erika Jonell (xevrem)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.o
 '''
 
-__all__ = ('HttpResponse', 'HttpRequest')
+__all__ = ('HttpData', 'http_data_create', 'http_data_parse', 'http_data_set_status', 'http_data_add_header', 'http_data_render_request', 'http_data_render_response')
 
 #constants
 CRLF = '\r\n'
@@ -90,108 +90,100 @@ AP = '&'
 QM = '?'
 EQ = '='
 
-class HttpResponse:
-    '''simple HTTP Response class
-    '''
-    http_standard = HTTP_STANDARD
-    raw = None
-    text = None
-    headers = {'content-type':'text/html'}
-    status = ''
-    body = ""
-
-    def __init__(self, status=200):
-        self.status = str(status)
-
-    def add_header(self, key, value):
-        self.headers[key] = value
-
-    def _render(self):
-        '''renders all textual information into raw bytes
-        '''
-        start_line = HTTP_STANDARD + SP + self.status + SP + STATUS_DICT[self.status] + CRLF
-
-        hdrs=''
-        for key, value in self.headers.items():
-            hdrs += key + SEP + value + CRLF
-
-        self.text = start_line + hdrs + CRLF + self.body
-        self.raw = self.text.encode()
-
-
-class HttpRequest:
-    '''simple HTTP Request class
+class HttpData:
+    '''simple HTTP Data Holder
     '''
     raw = None
     text = None
     http_standard = HTTP_STANDARD
     headers = {}
-    status = None
+    status = "200"
     body = ''
     resource = ''
     method = ''
     params= {}
     wildcards={}
 
-    def __init__(self, raw=None):
-        if raw:
-            self.parse(raw)
-        else:
-            pass
+def http_data_create(raw_data=None):
+    if raw_data:
+        return http_data_parse(HttpData(), raw_data)
+    else:
+        return HttpData()
 
-    def add_header(self, key, value):
-        self.headers[key] = value
+def http_data_add_header(http_data, key, value):
+    '''add a key-value pair to the headers
+    '''
+    http_data.headers[key] = value
+    return http_data
 
-    def parse(self, raw):
-        '''attempts to parse the raw request data
-        '''
-        self.raw = raw
+def http_data_parse(http_data, raw):
+    '''attempts to parse the raw request data
+    '''
+    http_data.raw = raw
 
-        #if data supplied as raw bytes, decode
-        if type(self.raw) is bytes:
-            data = self.raw.decode()
-        else:
-            data = self.raw
+    #if data supplied as raw bytes, decode
+    if type(http_data.raw) is bytes:
+        data = http_data.raw.decode()
+    else:
+        data = http_data.raw
 
-        #determine type of request, and resource requested
-        self.start_line = data.split(CRLF)[0]
-        self.method = self.start_line.split(SP)[0].strip(SP)
-        self.resource = self.start_line.split(SP)[1].strip(SP)
+    #determine type of request, and resource requested
+    http_data.start_line = data.split(CRLF)[0]
+    http_data.method = http_data.start_line.split(SP)[0].strip(SP)
+    http_data.resource = http_data.start_line.split(SP)[1].strip(SP)
 
-        #process parameters
-        if QM in self.resource:
-            self.resource, params = self.resource.split(QM)
-            for param in params.split(AP):
-                key,token = param.split(EQ)
-                self.params[key]=token
+    #process parameters
+    if QM in http_data.resource:
+        http_data.resource, params = http_data.resource.split(QM)
+        for param in params.split(AP):
+            key,token = param.split(EQ)
+            http_data.params[key]=token
 
-        #if resource ends with a / remove it
-        if self.resource.endswith('/') and len(self.resource) > 1:
-            self.resource = self.resource[:-1]
+    #if resource ends with a / remove it
+    if http_data.resource.endswith('/') and len(http_data.resource) > 1:
+        http_data.resource = http_data.resource[:-1]
 
-        #process headers and body
-        in_headers = True
-        for item in data.split(CRLF)[1:]:
-            if in_headers:
-                index = item.find(':')
-                k = item[:index]
-                if k:
-                    v = item[index+1:].strip(SP)
-                    self.headers[k] = v
-                else:
-                    in_headers = False
+    #process headers and body
+    in_headers = True
+    for item in data.split(CRLF)[1:]:
+        if in_headers:
+            index = item.find(':')
+            k = item[:index]
+            if k:
+                v = item[index+1:].strip(SP)
+                http_data.headers[k] = v
             else:
-                self.body = item
-                break
+                in_headers = False
+        else:
+            http_data.body = item
+            break
 
-    def _render(self):
-        '''renders all textual information into raw bytes
-        '''
-        start_line = self.method + SP + self.resource + SP + self.http_standard + CRLF
+    return http_data
 
-        hdrs=''
-        for key, value in self.headers.items():
-            hdrs += key + SEP + value + CRLF
+def http_data_render_request(http_data):
+    '''renders all textual information into raw bytes
+    '''
+    start_line = http_data.method + SP + http_data.resource + SP + http_data.http_standard + CRLF
 
-        self.text = start_line + hdrs + CRLF + self.body + CRLF
-        self.raw = self.text.encode()
+    hdrs=''
+    for key, value in http_data.headers.items():
+        hdrs += key + SEP + value + CRLF
+
+    http_data.text = start_line + hdrs + CRLF + http_data.body + CRLF
+    http_data.raw = http_data.text.encode()
+
+    return http_data
+
+def http_data_render_response(http_data):
+    '''renders all textual information into raw bytes
+    '''
+    start_line = HTTP_STANDARD + SP + http_data.status + SP + STATUS_DICT[http_data.status] + CRLF
+
+    hdrs=''
+    for key, value in http_data.headers.items():
+        hdrs += key + SEP + value + CRLF
+
+    http_data.text = start_line + hdrs + CRLF + http_data.body
+    http_data.raw = http_data.text.encode()
+
+    return http_data

@@ -32,13 +32,12 @@ import ssl
 
 from jinja2 import Environment, FileSystemLoader
 
-from .pahttp import HttpRequest, HttpResponse, STATUS_DICT
+from .pahttp import HttpData, STATUS_DICT, http_data_create, http_data_render_response, http_data_render_request
 from .paroute import Router
 from .palog import AsyncLogger
 
 __all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'logger', 'get', 'put', 'post', 'delete')
 
-#setup jinja2 env
 global logger, env
 
 env = Environment(loader=FileSystemLoader('templates'))
@@ -128,8 +127,8 @@ class InjestServer:
         '''handles an incomming HTTP request
         '''
         #create the request and response from the raw data
-        request = HttpRequest(raw)
-        response = HttpResponse()
+        request = http_data_create(raw)
+        response = HttpData()
 
         #process the response
         response = await self.process_route(request, response)
@@ -137,7 +136,7 @@ class InjestServer:
         self.log.log('{} [{} - {}]: {}'.format(request.method, response.status, STATUS_DICT[response.status], request.resource))
 
         #build response
-        response._render()
+        http_data_render_response(response)
 
         #send response and close connection
         transport.write(response.raw)
@@ -255,12 +254,12 @@ class RequestProtocol(asyncio.Protocol):
     data = b''
 
     def __init__(self, resource, method="GET", headers={}, body=""):
-        request = HttpRequest()
+        request = http_data_create()
         request.resource = resource
         request.method = method
         request.headers = headers
         request.body = body
-        request._render()
+        http_data_render_request(request)
         self.foo = request
 
     def connection_made(self, transport):
