@@ -36,7 +36,8 @@ from .pahttp import HttpData, STATUS_DICT, http_data_create, http_data_render_re
 from .paroute import Router
 from .palog import AsyncLogger
 
-__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server', 'logger', 'get', 'put', 'post', 'delete')
+__all__ = ('InjestServer', 'InjestProtocol', 'render_template', 'run_server',
+           'logger', 'get', 'put', 'post', 'delete')
 
 global logger, env
 

@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.o
 '''
 
-__all__ = ('HttpData', 'http_data_create', 'http_data_parse', 'http_data_set_status', 'http_data_add_header', 'http_data_render_request', 'http_data_render_response')
+__all__ = ('HttpData', 'http_data_create', 'http_data_parse', 'http_data_add_header', 'http_data_render_request', 'http_data_render_response')
 
 #constants
 CRLF = '\r\n'

@@ -24,10 +24,11 @@ SOFTWARE.
 
 import asyncio
 
-__all__ = ('AsyncLogger')
+__all__ = 'AsyncLogger'
 
 class AsyncLogger:
-    '''logger that appends logging futures to the event loop to help reduce I/O impact of print statements
+    '''logger that appends logging futures to the event loop to help reduce I/O
+       impact of print statements
     '''
     def __init__(self, debug=False, loop=None):
         if not loop:

@@ -26,8 +26,7 @@ SOFTWARE.o
 import asyncio
 import json
 
-from paws import pahttp
-from paws.paws import render_template, run_server, get
+from paws import render_template, run_server, get
 
 import content
 import config

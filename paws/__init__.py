@@ -1,3 +1,6 @@
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
-__all__ = ('paws', 'paroute', 'pahttp', 'palog')
+from .paws import *
+from .pahttp import *
+from .palog import AsyncLogger
+from .paroute import *

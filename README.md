@@ -27,7 +27,7 @@ Example
 -------
 
 ```
-from paws.paws import run_server
+from paws import run_server
 
 async def root(req, res):
   res.body = "hello world!"
